@@ -1,13 +1,31 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 // import { SafeAreaView } from 'react-native-safe-area-context';
 import { SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { themeColors } from '@/theme/index';
 import { Link,useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
+
 
 export default function WelcomeScreen() {
     const router = useRouter();
+
+
+    useEffect(()=>{
+        const checkUserStatus = async () => {
+            const userStatus = await AsyncStorage.getItem('isUser');
+            if(userStatus=="true"){
+                console.log("USER LOGED IN");
+                router.push("(tabs)");
+
+            }
+        };
+        checkUserStatus();
+        
+    })
 
     return (
         <SafeAreaView style={styles.container}>

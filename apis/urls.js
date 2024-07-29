@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 var  serverUrl;
-Platform.OS=='web'?serverUrl = "http://localhost:8000":serverUrl = "https://e99a-72-255-50-3.ngrok-free.app";
+Platform.OS=='web'?serverUrl = "http://localhost:8000":serverUrl = "https://7072-111-68-98-163.ngrok-free.app";
 
 
 export var uniqueCountryYearSportUrl =`${serverUrl}/unique_years_countries_sports/`;

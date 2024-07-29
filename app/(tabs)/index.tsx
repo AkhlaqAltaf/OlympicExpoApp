@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, TextInput, StyleSheet, Alert, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { loginApi, registerApi } from '@/apis/common_apis/common_apis';
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
@@ -13,31 +12,35 @@ import { Link, useRouter } from 'expo-router';
 export default function HomeScreen() {
 
   
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+
   const [isLogin, setIsLogin] = useState(false);
 const router =     useRouter();
 
   const logout = async () => {
-    // await AsyncStorage.removeItem('isUser');
-    // setIsLogin(false); // Trigger a state change
+
+    await AsyncStorage.setItem('isUser', 'false');
+    router.push("WelcomeScreen")
+    setIsLogin(false); 
+
   };
 
-  useEffect(() => {
-    const checkUserStatus = async () => {
+  useEffect(()=>{
+
+const checkUserStatus = async () => {
+            const userStatus = await AsyncStorage.getItem('isUser');
+            if(userStatus=="false"){
+              router.push("WelcomeScreen")
+
+            }        
+            else if (!userStatus) {
+              router.push("WelcomeScreen")
+
+            }    
+        };
+        checkUserStatus();
 
 
-      const userStatus = await AsyncStorage.getItem('isUser');
-      setIsLogin(userStatus === 'true');
-      if (!isLogin) {
-        // router.push("WelcomeScreen")
-
-      }
-    };
-    checkUserStatus();
-  }, [isLogin]);
+  })
 
 
   return  (

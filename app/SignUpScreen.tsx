@@ -1,5 +1,7 @@
+
+// SignUpScreen.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, TextInput, StyleSheet, Button } from 'react-native';
+import { View, Text, TouchableOpacity, Image, TextInput, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import { themeColors } from '@/theme/index';
@@ -8,30 +10,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { registerApi } from '@/apis/common_apis/common_apis';
 
 const SignUpScreen = () => {
-    // const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [isLogin, setIsLogin] = useState(false);
-
+   
     const router = useRouter();
-
 
     useEffect(() => {
         const checkUserStatus = async () => {
-          const userStatus = await AsyncStorage.getItem('isUser');
-          setIsLogin(userStatus === 'true');
+            const userStatus = await AsyncStorage.getItem('isUser');
+            setIsLogin(userStatus === 'true');
         };
         checkUserStatus();
-      }, [isLogin]);
+    }, [isLogin]);
 
-
-    const handleSignUp = async() => {
+    const handleSignUp = async () => {
         setEmailError('');
         setPasswordError('');
 
-        // Validation
         let isValid = true;
         if (!email.trim()) {
             setEmailError('Email is required');
@@ -49,77 +47,40 @@ const SignUpScreen = () => {
                 }
             }
         }
-         // Password validation
-    if (!password.trim()) {
-        setPasswordError('Password is required');
-        isValid = false;
-    } else {
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        if (!passwordRegex.test(password)) {
-            setPasswordError('Password must be at least 8 characters long, include uppercase and lowercase letters, numbers, and special characters.');
+
+        if (!password.trim()) {
+            setPasswordError('Password is required');
             isValid = false;
+        } else {
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!passwordRegex.test(password)) {
+                setPasswordError('Password must be at least 8 characters long, include uppercase and lowercase letters, numbers, and special characters.');
+                isValid = false;
+            }
         }
-    }
 
-    // Stop if validation fails
-    if (!isValid) return;
+        if (!isValid) return;
 
-   var response =  registerApi(email, password);
-
-   response.then((result)=>{
-    console.log(`User account created & signed in!${result}` );
-
-    router.push("(tabs)");
-
-    
-
-   }).catch((error)=>{
-
-    alert(`ERROR : ${error}`);
-   }).finally(()=>{
-
-   })
-
-
-
-        auth()
-            .createUserWithEmailAndPassword(email, password)
-            .then(() => {
-                
-            })
-            .catch(error => {
-                if (error.code === 'auth/email-already-in-use') {
-                    alert('That email address is already in use!');
-                } else if (error.code === 'auth/invalid-email') {
-                    alert('That email address is invalid!');
-                } else {
-                    // alert(error.message);
-                    alert(`Please fill the field.${error}`);
-                    // navigation.navigate('MyDrawer'); // Navigate to other screen after signup
-
-                }
-            });
+        try {
+            const result = await registerApi(email, password);
+            console.log(`User account created & signed in! ${result}`);
+            await AsyncStorage.setItem('isUser', 'true');
+            setIsLogin(true);
+            router.push("(tabs)");
+        } catch (error) {
+            Alert.alert('Error', `ERROR: ${error}`);
+        }
     };
 
     return (
-        
         <View style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
-      
                 <View style={styles.imageContainer}>
                     <Image source={require('@/assets/images/images/signup1.png')} style={styles.image} />
                 </View>
             </SafeAreaView>
             <View style={styles.formContainer}>
                 <View style={styles.form}>
-                   {/* <Text style={styles.label}>Full Name</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={name}
-                        onChangeText={setName}
-                        placeholder='Enter Full Name'
-                        autoCapitalize="none"
-                    /> */}
                     <Text style={styles.label}>Email Address</Text>
                     <TextInput
                         style={styles.input}
@@ -138,7 +99,7 @@ const SignUpScreen = () => {
                         secureTextEntry
                         autoCapitalize="none"
                     />
-                     {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+                    {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
                     <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
                         <Text style={styles.signUpButtonText}>Sign Up</Text>
                     </TouchableOpacity>
@@ -155,70 +116,6 @@ const SignUpScreen = () => {
     );
 };
 
-// import React from 'react';
-// import { View, Text, TouchableOpacity, Image, TextInput, StyleSheet } from 'react-native';
-// // import { SafeAreaView } from 'react-native-safe-area-context';
-// import { SafeAreaView } from 'react-native';
-// import { ArrowLeftIcon } from 'react-native-heroicons/solid';
-// import { useNavigation } from '@react-navigation/native';
-// import { themeColors } from '../theme';
-
-// export default function SignUpScreen() {
-//     const navigation = useNavigation();
-
-//     return (
-//         <View style={styles.container}>
-//             <SafeAreaView style={styles.safeArea}>
-//                 <View style={styles.header}>
-//                     <TouchableOpacity 
-//                         onPress={() => navigation.goBack()}
-//                         style={styles.backButton}>
-//                         <ArrowLeftIcon size="20" color="black" />
-//                     </TouchableOpacity>
-//                 </View>
-//                 <View style={styles.imageContainer}>
-//                     <Image source={require('../assets/images/signup1.png')} 
-//                         style={styles.image} />
-//                 </View>
-//             </SafeAreaView>
-//             <View style={styles.formContainer}>
-//                 <View style={styles.form}>
-//                     <Text style={styles.label}>Full Name</Text>
-//                     <TextInput
-//                         style={styles.input}
-//                         value="john snow"
-//                         placeholder='Enter Name'
-//                     />
-//                     <Text style={styles.label}>Email Address</Text>
-//                     <TextInput
-//                         style={styles.input}
-//                         value="john@gmail.com"
-//                         placeholder='Enter Email'
-//                     />
-//                     <Text style={styles.label}>Password</Text>
-//                     <TextInput
-//                         style={styles.input}
-//                         secureTextEntry
-//                         value="test12345"
-//                         placeholder='Enter Password'
-//                     />
-//                     <TouchableOpacity
-//                         style={styles.signUpButton}>
-//                         <Text style={styles.signUpButtonText}>Sign Up</Text>
-//                     </TouchableOpacity>
-//                 </View>
-//                 <Text style={styles.orText}>Or</Text>
-//                 <View style={styles.loginContainer}>
-//                     <Text style={styles.loginText}>Already have an account?</Text>
-//                     <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-//                         <Text style={styles.loginLink}> Log In</Text>
-//                     </TouchableOpacity>
-//                 </View>
-//             </View>
-//         </View>
-//     );
-// }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -226,18 +123,7 @@ const styles = StyleSheet.create({
     },
     safeArea: {
         flex: 1,
-        marginTop:20
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'start',
-    },
-    backButton: {
-        backgroundColor: '#fbbf24',
-        padding: 10,
-        borderRadius: 20,
-        marginLeft: 5,
-        marginTop: 5,
+        marginTop: 20,
     },
     imageContainer: {
         alignItems: 'center',
@@ -246,8 +132,8 @@ const styles = StyleSheet.create({
     image: {
         width: 260,
         height: 260,
-        borderRadius:200,
-        marginTop:-16,
+        borderRadius: 200,
+        marginTop: -16,
     },
     formContainer: {
         flex: 1,
@@ -256,7 +142,7 @@ const styles = StyleSheet.create({
         paddingTop: 20,
         borderTopLeftRadius: 50,
         borderTopRightRadius: 50,
-        paddingBottom:80,
+        paddingBottom: 80,
     },
     form: {
         // Styles for form
@@ -265,7 +151,7 @@ const styles = StyleSheet.create({
         marginLeft: 5,
         color: 'rgb(51 65 85)',
         marginBottom: 8,
-        fontWeight:'bold',
+        fontWeight: 'bold',
         marginTop: 10,
     },
     input: {
@@ -312,4 +198,5 @@ const styles = StyleSheet.create({
         marginLeft: 5,
     },
 });
+
 export default SignUpScreen;

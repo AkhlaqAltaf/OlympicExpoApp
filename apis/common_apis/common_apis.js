@@ -143,32 +143,33 @@ export const fetchOverallAnalysisHeatmapData = async()=>{
 
 
 
-export const registerApi = async(email , password)=>{
-
-
+export const registerApi = async (email, password) => {
     try {
-        const response = await axios.post(`${registerUrl}`,   {'email':email,'password':password});
+        const response = await axios.post(`${registerUrl}`, { 'email': email, 'password': password });
         return response.data;
-
     } catch (error) {
         console.error(error);
-
+        throw error;
     }
-}
+};
 
-
-export const loginApi = async(email , password)=>{
-
-
+export const loginApi = async (email, password) => {
     try {
-        const response = await axios.post(`${loginUrl}`, 
-            {'email':email,'password':password}
-
-        );
+        const response = await axios.post(loginUrl, { email, password });
         return response;
-
     } catch (error) {
-        console.error(error);
-
+        if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            return { error: true, status: error.response.status, message: error.response.data };
+        } else if (error.request) {
+            // The request was made but no response was received
+            console.error('Error Request:', error.request);
+            return { error: true, message: 'No response from server. Please try again later.' };
+        } else {
+            // Something happened in setting up the request that triggered an Error
+            console.error('Error Message:', error.message);
+            return { error: true, message: error.message };
+        }
     }
-}
+};

@@ -15,39 +15,36 @@ const LoginScreen = () => {
     const [passwordError, setPasswordError] = useState('');
     const [isLogin, setIsLogin] = useState(false);
 
-
     useEffect(() => {
         const checkUserStatus = async () => {
-          const userStatus = await AsyncStorage.getItem('isUser');
-          setIsLogin(userStatus === 'true');
+            const userStatus = await AsyncStorage.getItem('isUser');
+            setIsLogin(userStatus === 'true');
         };
         checkUserStatus();
-      }, [isLogin]);
+    }, [isLogin]);
 
-
-    const handleLogin = () => {
-        router.push("(tabs)")
+    const handleLogin = async () => {
         setEmailError('');
         setPasswordError('');
 
         let isValid = true;
         // Email validation
-    if (!email.trim()) {
-        setEmailError('Email is required');
-        isValid = false;
-    } else {
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-        if (!emailRegex.test(email)) {
-            setEmailError('Invalid email format');
+        if (!email.trim()) {
+            setEmailError('Email is required');
             isValid = false;
-        } else if (email.endsWith('@gmail.com')) {
-            const localPart = email.split('@')[0];
-            if (localPart.includes('..') || localPart.endsWith('.')) {
-                setEmailError('Invalid Gmail address');
+        } else {
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+            if (!emailRegex.test(email)) {
+                setEmailError('Invalid email format');
                 isValid = false;
+            } else if (email.endsWith('@gmail.com')) {
+                const localPart = email.split('@')[0];
+                if (localPart.includes('..') || localPart.endsWith('.')) {
+                    setEmailError('Invalid Gmail address');
+                    isValid = false;
+                }
             }
         }
-    }   
         if (!password.trim()) {
             setPasswordError('Password is required');
             isValid = false;
@@ -56,36 +53,32 @@ const LoginScreen = () => {
         // Stop if validation fails
         if (!isValid) return;
 
+        try {
+            const result = await loginApi(email, password);
+            // Alert.alert('Error', result);
 
-        var response =  loginApi(email, password);
 
-        response.then((result)=>{
-         console.log(`User account created & signed in!${result}` );
-     
-         alert(result);
-     
-         router.push("(tabs)");
+            
 
-     
-        }).catch((error)=>{
-     
-         alert(`ERROR : ${error}`);
-        }).finally(()=>{
-     
-        })
-     
-     
-   
+            console.log(`User signed in!${result}`);
+            Alert.alert('Success', 'User account created & signed in!');
+
+            // Save the login status in AsyncStorage
+            await AsyncStorage.setItem('isUser', 'true');
+            setIsLogin(true);
+
+            router.push("(tabs)");
+        } catch (error) {
+
+            Alert.alert('Error', `ERROR: ${error}`);
+        }
     };
 
     return (
         <View style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
-           
                 <View style={styles.imageContainer}>
-
-                    <Image           source={require('@/assets/images/images/login1.png')}
- style={styles.image} />
+                    <Image source={require('@/assets/images/images/login1.png')} style={styles.image} />
                 </View>
             </SafeAreaView>
             <View style={styles.formContainer}>
@@ -110,9 +103,8 @@ const LoginScreen = () => {
                     />
                     {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
                     <TouchableOpacity style={styles.forgotPassword}>
-                         <Text style={styles.forgotPasswordText}></Text>
-                         {/* <Text style={styles.forgotPasswordText}>Forgot Password?</Text> */}
-                     </TouchableOpacity>
+                        <Text style={styles.forgotPasswordText}></Text>
+                    </TouchableOpacity>
                     <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
                         <Text style={styles.loginButtonText}>Login</Text>
                     </TouchableOpacity>
@@ -131,68 +123,6 @@ const LoginScreen = () => {
     );
 };
 
-// import React from 'react';
-// import { View, Text, TouchableOpacity, Image, TextInput, StyleSheet } from 'react-native';
-// // import { SafeAreaView } from 'react-native-safe-area-context';
-// import { SafeAreaView } from 'react-native';
-// import { ArrowLeftIcon } from 'react-native-heroicons/solid';
-// import { themeColors } from '../theme';
-// import { useNavigation } from '@react-navigation/native';
-
-// export default function LoginScreen() {
-//     const navigation = useNavigation();
-
-//     return (
-//         <View style={styles.container}>
-//             <SafeAreaView style={styles.safeArea}>
-//                 <View style={styles.header}>
-//                     <TouchableOpacity 
-//                         onPress={() => navigation.goBack()} 
-//                         style={styles.backButton}>
-//                         <ArrowLeftIcon size="20" color="black" />
-//                     </TouchableOpacity>
-//                 </View>
-//                 <View style={styles.imageContainer}>
-//                     <Image source={require('../assets/images/login1.png')} 
-//                     style={styles.image} />
-//                 </View>
-//             </SafeAreaView>
-//             <View style={styles.formContainer}>
-//                 <View style={styles.form}>
-//                     <Text style={styles.label}>Email Address</Text>
-//                     <TextInput 
-//                         style={styles.input}
-//                         placeholder="email"
-//                         value="john@gmail.com" 
-//                     />
-//                     <Text style={styles.label}>Password</Text>
-//                     <TextInput 
-//                         style={styles.input}
-//                         secureTextEntry
-//                         placeholder="password"
-//                         value="test12345" 
-//                     />
-//                     <TouchableOpacity style={styles.forgotPassword}>
-//                         <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-//                     </TouchableOpacity>
-//                     <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('MyDrawer')}>
-//                         <Text style={styles.loginButtonText}>Login</Text>
-//                     </TouchableOpacity>
-//                 </View>
-//                 <Text style={styles.orText}>Or</Text>
-//                 <View style={styles.signUpContainer}>
-//                     <Text style={styles.signUpText}>
-//                         Don't have an account?
-//                     </Text>
-//                     <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-//                         <Text style={styles.signUpLink}> Sign Up</Text>
-//                     </TouchableOpacity>
-//                 </View>
-//             </View>
-//         </View>
-//     );
-// }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -200,8 +130,7 @@ const styles = StyleSheet.create({
     },
     safeArea: {
         flex: 1,
-        marginTop:20
-
+        marginTop: 20,
     },
     header: {
         flexDirection: 'row',
@@ -221,8 +150,8 @@ const styles = StyleSheet.create({
     image: {
         width: 250,
         height: 250,
-        borderRadius:200,
-        marginTop:-17
+        borderRadius: 200,
+        marginTop: -17,
     },
     formContainer: {
         flex: 1,
@@ -231,16 +160,16 @@ const styles = StyleSheet.create({
         paddingTop: 20,
         borderTopLeftRadius: 50,
         borderTopRightRadius: 50,
-        paddingBottom:100,
+        paddingBottom: 100,
     },
     form: {
-     ///styling for form
+        // styling for form
     },
     label: {
         marginLeft: 5,
         color: 'rgb(51 65 85)',
         marginBottom: 8,
-        fontWeight:'bold',
+        fontWeight: 'bold',
         marginTop: 8,
     },
     input: {
@@ -256,7 +185,7 @@ const styles = StyleSheet.create({
     forgotPasswordText: {
         color: 'rgb(51 65 85)',
         marginBottom: 15,
-        fontWeight:'bold'
+        fontWeight: 'bold',
     },
     loginButton: {
         backgroundColor: '#fbbf24',
@@ -297,4 +226,5 @@ const styles = StyleSheet.create({
         marginLeft: 5,
     },
 });
+
 export default LoginScreen;
